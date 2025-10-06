@@ -71,10 +71,28 @@ Launch the terminal below and explore:
 
 ---
 
+## 🌐 Deploy It for Anyone (Vercel Quickstart)
+
+Want to share this terminal experience broadly? Vercel’s static hosting makes
+it a one-command deploy:
+
+1. [Install the Vercel CLI](https://vercel.com/docs/cli) if you haven’t
+   already: `npm i -g vercel`.
+2. Authenticate: `vercel login`.
+3. From the project root, run `vercel` and accept the defaults to create the
+   project.
+4. Deploy updates any time with `vercel --prod`.
+
+The app is a static site (HTML/CSS/JS), so Vercel serves it instantly with no
+extra configuration. You can also drop the folder into Netlify, GitHub Pages,
+or any static host.
+
+---
+
 **Ready to code the future? So am I!**
 
 ---
 
-*No personal or contact data included. For demo and application purposes 
+*No personal or contact data included. For demo and application purposes
 only.*
 ```
