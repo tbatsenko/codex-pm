@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codex PM Terminal | Tanya Batsenko</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="viewport">
+      <header class="hero">
+        <h1>$ whois tanya-batsenko</h1>
+        <p>
+          Welcome to an open web terminal that anyone can explore. Type
+          <span class="command">help</span> to discover why I'd make Codex the
+          most beloved AI coding partner on the planet.
+        </p>
+      </header>
+      <section class="terminal" aria-live="polite">
+        <div id="output" class="terminal__output" role="log">
+          <div class="line">Codex://pm> boot sequence initialized...</div>
+          <div class="line">Loading developer empathy modules... ✅</div>
+          <div class="line">Loading 0-to-1 product playbooks... ✅</div>
+          <div class="line">Connecting to OpenAI Codex vision... ✅</div>
+          <div class="line">Type <span class="command">help</span> to begin.</div>
+        </div>
+        <form class="terminal__input" id="terminal-form">
+          <label class="sr-only" for="command">Enter a command</label>
+          <span class="prompt">Codex://pm&gt;</span>
+          <input
+            id="command"
+            name="command"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Command line"
+          />
+        </form>
+      </section>
+      <footer class="footer">
+        <p>
+          Built by Tanya (Tetiana) Batsenko &mdash; AI Product Manager who blends
+          research breakthroughs into tools developers love.
+        </p>
+      </footer>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
