@@ -102,6 +102,9 @@ const stopAmbient = async () => {
   updateSoundButton("off");
 };
 
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const typeLine = async (text, options = {}) => {
   const { className = "line", delayMs = 0 } = options;
   if (delayMs) await delay(delayMs);
@@ -265,6 +268,33 @@ const processCommand = async (rawInput, options = {}) => {
   }
 
   const lower = input.toLowerCase();
+commandInput.addEventListener("keydown", (event) => {
+  if (!history.length) return;
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    historyIndex = Math.max(0, historyIndex - 1);
+    commandInput.value = history[historyIndex];
+  }
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    historyIndex = Math.min(history.length, historyIndex + 1);
+    commandInput.value = history[historyIndex] ?? "";
+  }
+});
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const rawInput = commandInput.value.trim();
+  if (!rawInput) return;
+
+  history.push(rawInput);
+  historyIndex = history.length;
+
+  await typeLine(`<span class=\"prompt\">Codex://pm&gt;</span> ${rawInput}`);
+
+  commandInput.value = "";
+
+  const lower = rawInput.toLowerCase();
 
   if (lower.startsWith("answer")) {
     const option = lower.split(" ")[1];
@@ -333,6 +363,8 @@ if (toggleSoundBtn) {
     commandInput.focus();
   });
 }
+
+});
 
 typeLine("Need a tour? Type <span class=\"command\">help</span>.", { delayMs: 400 });
 commandInput.focus();
