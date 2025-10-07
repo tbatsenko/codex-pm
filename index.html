@@ -30,6 +30,21 @@
           <div class="line">Connecting to OpenAI Codex vision... ✅</div>
           <div class="line">Type <span class="command">help</span> to begin.</div>
         </div>
+        <div class="terminal__actions" role="group" aria-label="Suggested commands">
+          <button type="button" class="chip" data-command="help">help</button>
+          <button type="button" class="chip" data-command="show experience">show experience</button>
+          <button type="button" class="chip" data-command="show motivation">show motivation</button>
+          <button type="button" class="chip" data-command="play challenge">play challenge</button>
+          <button
+            type="button"
+            class="chip chip--ghost"
+            id="toggle-sound"
+            aria-pressed="false"
+            data-state="off"
+          >
+            🔈 Enable ambience
+          </button>
+        </div>
         <form class="terminal__input" id="terminal-form">
           <label class="sr-only" for="command">Enter a command</label>
           <span class="prompt">Codex://pm&gt;</span>

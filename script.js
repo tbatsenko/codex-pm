@@ -1,6 +1,107 @@
 const outputEl = document.getElementById("output");
 const form = document.getElementById("terminal-form");
 const commandInput = document.getElementById("command");
+const toggleSoundBtn = document.getElementById("toggle-sound");
+const suggestionButtons = document.querySelectorAll(".chip[data-command]");
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+let audioCtx;
+let ambienceCreated = false;
+let autoSoundTriggered = false;
+
+const createAmbience = () => {
+  if (ambienceCreated) return;
+  const AudioContextConstructor =
+    window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextConstructor) {
+    console.warn("Web Audio API is not supported in this browser.");
+    return;
+  }
+
+  audioCtx = new AudioContextConstructor();
+
+  const baseOsc = audioCtx.createOscillator();
+  baseOsc.type = "sine";
+  baseOsc.frequency.value = 140;
+
+  const shimmerOsc = audioCtx.createOscillator();
+  shimmerOsc.type = "triangle";
+  shimmerOsc.frequency.value = 420;
+
+  const baseGain = audioCtx.createGain();
+  baseGain.gain.value = 0.08;
+
+  const shimmerGain = audioCtx.createGain();
+  shimmerGain.gain.value = 0.03;
+
+  const lfo = audioCtx.createOscillator();
+  lfo.type = "sine";
+  lfo.frequency.value = 0.08;
+
+  const lfoGain = audioCtx.createGain();
+  lfoGain.gain.value = 0.02;
+
+  const shimmerLfo = audioCtx.createOscillator();
+  shimmerLfo.type = "sine";
+  shimmerLfo.frequency.value = 0.05;
+
+  const shimmerLfoGain = audioCtx.createGain();
+  shimmerLfoGain.gain.value = 40;
+
+  lfo.connect(lfoGain);
+  lfoGain.connect(baseGain.gain);
+
+  shimmerLfo.connect(shimmerLfoGain);
+  shimmerLfoGain.connect(shimmerOsc.frequency);
+
+  baseOsc.connect(baseGain);
+  shimmerOsc.connect(shimmerGain);
+  shimmerGain.connect(baseGain);
+  baseGain.connect(audioCtx.destination);
+
+  baseOsc.start();
+  shimmerOsc.start();
+  lfo.start();
+  shimmerLfo.start();
+
+  ambienceCreated = true;
+};
+
+const updateSoundButton = (state) => {
+  if (!toggleSoundBtn) return;
+  toggleSoundBtn.dataset.state = state;
+  toggleSoundBtn.setAttribute("aria-pressed", state === "on" ? "true" : "false");
+  toggleSoundBtn.textContent =
+    state === "on" ? "🔊 Mute ambience" : "🔈 Enable ambience";
+};
+
+const startAmbient = async () => {
+  try {
+    if (!ambienceCreated) {
+      createAmbience();
+    }
+    if (!audioCtx) {
+      updateSoundButton("off");
+      return false;
+    }
+    await audioCtx.resume();
+    updateSoundButton("on");
+    return true;
+  } catch (error) {
+    console.warn("Unable to start ambience", error);
+    return false;
+  }
+};
+
+const stopAmbient = async () => {
+  if (!audioCtx) return;
+  if (audioCtx.state === "running") {
+    await audioCtx.suspend();
+  }
+  updateSoundButton("off");
+};
+
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -145,6 +246,28 @@ const answerHandler = (choice) => {
 const history = [];
 let historyIndex = 0;
 
+const processCommand = async (rawInput, options = {}) => {
+  const { storeHistory = true, echo = true } = options;
+  const input = rawInput.trim();
+  if (!input) return;
+
+  if (!autoSoundTriggered) {
+    const started = await startAmbient();
+    if (started) {
+      autoSoundTriggered = true;
+    }
+  }
+
+  if (storeHistory) {
+    history.push(input);
+  }
+  historyIndex = history.length;
+
+  if (echo) {
+    await typeLine(`<span class="prompt">Codex://pm&gt;</span> ${input}`);
+  }
+
+  const lower = input.toLowerCase();
 commandInput.addEventListener("keydown", (event) => {
   if (!history.length) return;
   if (event.key === "ArrowUp") {
@@ -194,6 +317,53 @@ form.addEventListener("submit", async (event) => {
       { delayMs: 80 }
     );
   }
+};
+
+commandInput.addEventListener("keydown", (event) => {
+  if (!history.length) return;
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    historyIndex = Math.max(0, historyIndex - 1);
+    commandInput.value = history[historyIndex];
+  }
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    historyIndex = Math.min(history.length, historyIndex + 1);
+    commandInput.value = history[historyIndex] ?? "";
+  }
+});
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const rawInput = commandInput.value;
+  commandInput.value = "";
+  await processCommand(rawInput);
+});
+
+suggestionButtons.forEach((button) => {
+  button.addEventListener("click", async () => {
+    const command = button.dataset.command;
+    if (!command) return;
+    await processCommand(command, { storeHistory: false });
+    commandInput.focus();
+  });
+});
+
+if (toggleSoundBtn) {
+  toggleSoundBtn.addEventListener("click", async () => {
+    const state = toggleSoundBtn.dataset.state;
+    if (state === "on") {
+      await stopAmbient();
+    } else {
+      const started = await startAmbient();
+      if (started) {
+        autoSoundTriggered = true;
+      }
+    }
+    commandInput.focus();
+  });
+}
+
 });
 
 typeLine("Need a tour? Type <span class=\"command\">help</span>.", { delayMs: 400 });
